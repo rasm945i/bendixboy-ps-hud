@@ -4,6 +4,8 @@ game 'gta5'
 description 'ps-hud'
 version '2.1.1'
 
+dependency 'bendixboy-hudmanager'
+
 shared_scripts {
 	'@qb-core/shared/locale.lua',
 	'locales/en.lua',

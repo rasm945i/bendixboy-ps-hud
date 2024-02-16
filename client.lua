@@ -2,7 +2,8 @@ local QBCore = exports['qb-core']:GetCoreObject()
 local PlayerData = QBCore.Functions.GetPlayerData()
 local config = Config
 local UIConfig = UIConfig
-local speedMultiplier = config.UseMPH and 2.23694 or 3.6
+--local speedMultiplier = config.UseMPH and 2.23694 or 3.6
+local speedMultiplier = config.UseMPH and 1.8589 or 3.0
 local seatbeltOn = false
 local cruiseOn = false
 local showAltitude = false
@@ -70,21 +71,6 @@ local function CinematicShow(bool)
             w = i
         end
     end
-end
-
-local function hasHarness()
-    local ped = PlayerPedId()
-    if not IsPedInAnyVehicle(ped, false) then return end
-
-    local _harness = false
-    local hasHarness = exports['qb-smallresources']:HasHarness()
-    if hasHarness then
-        _harness = true
-    else
-        _harness = false
-    end
-
-    harness = _harness
 end
 
 local function loadSettings()
@@ -397,126 +383,6 @@ RegisterNUICallback('HideMap', function(data, cb)
     TriggerEvent("hud:client:playHudChecklistSound")
 end)
 
-RegisterNetEvent("hud:client:LoadMap", function()
-    Wait(50)
-    -- Credit to Dalrae for the solve.
-    local defaultAspectRatio = 1920/1080 -- Don't change this.
-    local resolutionX, resolutionY = GetActiveScreenResolution()
-    local aspectRatio = resolutionX/resolutionY
-    local minimapOffset = 0
-    if aspectRatio > defaultAspectRatio then
-        minimapOffset = ((defaultAspectRatio-aspectRatio)/3.6)-0.008
-    end
-    if Menu.isToggleMapShapeChecked == "square" then
-        RequestStreamedTextureDict("squaremap", false)
-        if not HasStreamedTextureDictLoaded("squaremap") then
-            Wait(150)
-        end
-        if Menu.isMapNotifChecked then
-            QBCore.Functions.Notify(Lang:t("notify.load_square_map"))
-        end
-        SetMinimapClipType(0)
-        AddReplaceTexture("platform:/textures/graphics", "radarmasksm", "squaremap", "radarmasksm")
-        AddReplaceTexture("platform:/textures/graphics", "radarmask1g", "squaremap", "radarmasksm")
-        -- 0.0 = nav symbol and icons left
-        -- 0.1638 = nav symbol and icons stretched
-        -- 0.216 = nav symbol and icons raised up
-        SetMinimapComponentPosition("minimap", "L", "B", 0.0 + minimapOffset, -0.047, 0.1638, 0.183)
-
-        -- icons within map
-        SetMinimapComponentPosition("minimap_mask", "L", "B", 0.0 + minimapOffset, 0.0, 0.128, 0.20)
-
-        -- -0.01 = map pulled left
-        -- 0.025 = map raised up
-        -- 0.262 = map stretched
-        -- 0.315 = map shorten
-        SetMinimapComponentPosition('minimap_blur', 'L', 'B', -0.01 + minimapOffset, 0.025, 0.262, 0.300)
-        SetBlipAlpha(GetNorthRadarBlip(), 0)
-        SetRadarBigmapEnabled(true, false)
-        SetMinimapClipType(0)
-        Wait(50)
-        SetRadarBigmapEnabled(false, false)
-        if Menu.isToggleMapBordersChecked then
-            showCircleB = false
-            showSquareB = true
-        end
-        Wait(1200)
-        if Menu.isMapNotifChecked then
-            QBCore.Functions.Notify(Lang:t("notify.loaded_square_map"))
-        end
-    elseif Menu.isToggleMapShapeChecked == "circle" then
-        RequestStreamedTextureDict("circlemap", false)
-        if not HasStreamedTextureDictLoaded("circlemap") then
-            Wait(150)
-        end
-        if Menu.isMapNotifChecked then
-            QBCore.Functions.Notify(Lang:t("notify.load_circle_map"))
-        end
-        SetMinimapClipType(1)
-        AddReplaceTexture("platform:/textures/graphics", "radarmasksm", "circlemap", "radarmasksm")
-        AddReplaceTexture("platform:/textures/graphics", "radarmask1g", "circlemap", "radarmasksm")
-        -- -0.0100 = nav symbol and icons left
-        -- 0.180 = nav symbol and icons stretched
-        -- 0.258 = nav symbol and icons raised up
-        SetMinimapComponentPosition("minimap", "L", "B", -0.0100 + minimapOffset, -0.030, 0.180, 0.258)
-
-        -- icons within map
-        SetMinimapComponentPosition("minimap_mask", "L", "B", 0.200 + minimapOffset, 0.0, 0.065, 0.20)
-
-        -- -0.00 = map pulled left
-        -- 0.015 = map raised up
-        -- 0.252 = map stretched
-        -- 0.338 = map shorten
-        SetMinimapComponentPosition('minimap_blur', 'L', 'B', -0.00 + minimapOffset, 0.015, 0.252, 0.338)
-        SetBlipAlpha(GetNorthRadarBlip(), 0)
-        SetMinimapClipType(1)
-        SetRadarBigmapEnabled(true, false)
-        Wait(50)
-        SetRadarBigmapEnabled(false, false)
-        if Menu.isToggleMapBordersChecked then
-            showSquareB = false
-            showCircleB = true
-        end
-        Wait(1200)
-        if Menu.isMapNotifChecked then
-            QBCore.Functions.Notify(Lang:t("notify.loaded_circle_map"))
-        end
-    end
-end)
-
-RegisterNUICallback('ToggleMapShape', function(data, cb)
-    cb({})
-    Wait(50)
-    if Menu.isMapEnabledChecked then
-        Menu.isToggleMapShapeChecked = data.shape
-        Wait(50)
-        TriggerEvent("hud:client:LoadMap")
-    end
-    TriggerEvent("hud:client:playHudChecklistSound")
-end)
-
-RegisterNUICallback('ToggleMapBorders', function(data, cb)
-    cb({})
-    Wait(50)
-    if data.checked then
-        Menu.isToggleMapBordersChecked = true
-    else
-        Menu.isToggleMapBordersChecked = false
-    end
-
-    if Menu.isToggleMapBordersChecked then
-        if Menu.isToggleMapShapeChecked == "square" then
-            showSquareB = true
-        else
-            showCircleB = true
-        end
-    else
-        showSquareB = false
-        showCircleB = false
-    end
-    TriggerEvent("hud:client:playHudChecklistSound")
-end)
-
 -- Compass
 RegisterNUICallback('showCompassBase', function(data, cb)
     cb({})
@@ -801,68 +667,6 @@ local function updatePlayerHud(data)
     end
 end
 
-local prevVehicleStats = {
-    nil, --[1] show,
-    nil, --[2] isPaused,
-    nil, --[3] seatbelt
-    nil, --[4] speed
-    nil, --[5] fuel
-    nil, --[6] altitude
-    nil, --[7] showAltitude
-    nil, --[8] showSeatbelt
-    nil, --[9] showSquareBorder
-    nil --[10] showCircleBorder
-}
-
-local function updateShowVehicleHud(show)
-    if prevVehicleStats[1] ~= show then
-        prevVehicleStats[1] = show
-        prevVehicleStats[3] = false
-        SendNUIMessage({
-            action = 'car',
-            topic = 'display',
-            show = false,
-            seatbelt = false,
-        })
-    end
-end
-
-local function updateVehicleHud(data)
-    local shouldUpdate = false
-    for k, v in pairs(data) do
-        if prevVehicleStats[k] ~= v then shouldUpdate = true break end
-    end
-    prevVehicleStats = data
-    if shouldUpdate then
-        SendNUIMessage({
-            action = 'car',
-            topic = 'status',
-            show = data[1],
-            isPaused = data[2],
-            seatbelt = data[3],
-            speed = data[4],
-            fuel = data[5],
-            altitude = data[6],
-            showAltitude = data[7],
-            showSeatbelt = data[8],
-            showSquareB = data[9],
-            showCircleB = data[10],
-        })
-    end
-end
-
-local lastFuelUpdate = 0
-local lastFuelCheck = {}
-
-local function getFuelLevel(vehicle)
-    local updateTick = GetGameTimer()
-    if (updateTick - lastFuelUpdate) > 2000 then
-        lastFuelUpdate = updateTick
-        lastFuelCheck = math.floor(exports[Config.FuelScript]:GetFuel(vehicle))
-    end
-    return lastFuelCheck
-end
-
 -- HUD Update loop
 
 CreateThread(function()
@@ -984,24 +788,24 @@ CreateThread(function()
                     dev,
                 })
 
-                updateVehicleHud({
-                    show,
-                    IsPauseMenuActive(),
-                    seatbeltOn,
-                    math.ceil(GetEntitySpeed(vehicle) * speedMultiplier),
-                    getFuelLevel(vehicle),
-                    math.ceil(GetEntityCoords(player).z * 0.5),
-                    showAltitude,
-                    showSeatbelt,
-                    showSquareB,
-                    showCircleB,
-                })
+                -- Disable vehicle hud!
+                -- updateVehicleHud({
+                --     show,
+                --     IsPauseMenuActive(),
+                --     seatbeltOn,
+                --     math.ceil(GetEntitySpeed(vehicle) * speedMultiplier),
+                --     getFuelLevel(vehicle),
+                --     math.ceil(GetEntityCoords(player).z * 0.5),
+                --     showAltitude,
+                --     showSeatbelt,
+                --     showSquareB,
+                --     showCircleB,
+                -- })
                 showAltitude = false
                 showSeatbelt = true
             else
                 if wasInVehicle then
                     wasInVehicle = false
-                    updateShowVehicleHud(false)
                     prevVehicleStats[1] = false
                     prevVehicleStats[3] = false
                     seatbeltOn = false
@@ -1013,7 +817,6 @@ CreateThread(function()
         else
             -- Not logged in, dont show Status/Vehicle UI (cached)
             updateShowPlayerHud(false)
-            updateShowVehicleHud(false)
             DisplayRadar(false)
             Wait(1000)
         end
@@ -1036,7 +839,7 @@ CreateThread(function()
         if LocalPlayer.state.isLoggedIn then
             local ped = PlayerPedId()
             if IsPedInAnyVehicle(ped, false) and not IsThisModelABicycle(GetEntityModel(GetVehiclePedIsIn(ped, false))) and not isElectric(GetVehiclePedIsIn(ped, false)) then
-                if exports[Config.FuelScript]:GetFuel(GetVehiclePedIsIn(ped, false)) <= 20 then -- At 20% Fuel Left
+                if GetVehicleFuelLevel(GetVehiclePedIsIn(ped, false)) <= 20 then -- At 20% Fuel Left
                     if Menu.isLowFuelChecked then
                         TriggerServerEvent("InteractSound_SV:PlayOnSource", "pager", 0.10)
                         QBCore.Functions.Notify(Lang:t("notify.low_fuel"), "error")
@@ -1081,137 +884,6 @@ RegisterNetEvent('hud:client:OnMoneyChange', function(type, amount, isMinus)
     })
 end)
 
--- Harness Check / Seatbelt Check
-
-CreateThread(function()
-    while true do
-        Wait(1500)
-        if LocalPlayer.state.isLoggedIn then
-            local ped = PlayerPedId()
-            if IsPedInAnyVehicle(ped, false) then
-                hasHarness()
-                local veh = GetEntityModel(GetVehiclePedIsIn(ped, false))
-                if seatbeltOn ~= true and IsThisModelACar(veh) then
-                    TriggerEvent("InteractSound_CL:PlayOnOne", "beltalarm", 0.6)
-                end
-            end
-        end
-    end
-end)
-
-
--- Stress Gain
-
-CreateThread(function() -- Speeding
-    while true do
-        if LocalPlayer.state.isLoggedIn then
-            local ped = PlayerPedId()
-            if IsPedInAnyVehicle(ped, false) then
-                local speed = GetEntitySpeed(GetVehiclePedIsIn(ped, false)) * speedMultiplier
-                local stressSpeed = seatbeltOn and config.MinimumSpeed or config.MinimumSpeedUnbuckled
-                if speed >= stressSpeed then
-                    TriggerServerEvent('hud:server:GainStress', math.random(1, 3))
-                end
-            end
-        end
-        Wait(10000)
-    end
-end)
-
-local function IsWhitelistedWeaponStress(weapon)
-    if weapon then
-        for _, v in pairs(config.WhitelistedWeaponStress) do
-            if weapon == v then
-                return true
-            end
-        end
-    end
-    return false
-end
-
-CreateThread(function() -- Shooting
-    while true do
-        if LocalPlayer.state.isLoggedIn then
-            local ped = PlayerPedId()
-            local weapon = GetSelectedPedWeapon(ped)
-            if weapon ~= `WEAPON_UNARMED` then
-                if IsPedShooting(ped) and not IsWhitelistedWeaponStress(weapon) then
-                    if math.random() < config.StressChance then
-                        TriggerServerEvent('hud:server:GainStress', math.random(1, 3))
-                    end
-                    Wait(100)
-                else
-                    Wait(500)
-                end
-            else
-                Wait(1000)
-            end
-        else
-            Wait(1000)
-        end
-    end
-end)
-
--- Stress Screen Effects
-
-local function GetBlurIntensity(stresslevel)
-    for k, v in pairs(config.Intensity['blur']) do
-        if stresslevel >= v.min and stresslevel <= v.max then
-            return v.intensity
-        end
-    end
-    return 1500
-end
-
-local function GetEffectInterval(stresslevel)
-    for k, v in pairs(config.EffectInterval) do
-        if stresslevel >= v.min and stresslevel <= v.max then
-            return v.timeout
-        end
-    end
-    return 60000
-end
-
-CreateThread(function()
-    while true do
-        if LocalPlayer.state.isLoggedIn then
-            local ped = PlayerPedId()
-            local effectInterval = GetEffectInterval(stress)
-            if stress >= 100 then
-                local BlurIntensity = GetBlurIntensity(stress)
-                local FallRepeat = math.random(2, 4)
-                local RagdollTimeout = FallRepeat * 1750
-                TriggerScreenblurFadeIn(1000.0)
-                Wait(BlurIntensity)
-                TriggerScreenblurFadeOut(1000.0)
-
-                if not IsPedRagdoll(ped) and IsPedOnFoot(ped) and not IsPedSwimming(ped) then
-                    SetPedToRagdollWithFall(ped, RagdollTimeout, RagdollTimeout, 1, GetEntityForwardVector(ped), 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-                end
-
-                Wait(1000)
-                for i = 1, FallRepeat, 1 do
-                    Wait(750)
-                    DoScreenFadeOut(200)
-                    Wait(1000)
-                    DoScreenFadeIn(200)
-                    TriggerScreenblurFadeIn(1000.0)
-                    Wait(BlurIntensity)
-                    TriggerScreenblurFadeOut(1000.0)
-                end
-            elseif stress >= config.MinimumStress then
-                local BlurIntensity = GetBlurIntensity(stress)
-                TriggerScreenblurFadeIn(1000.0)
-                Wait(BlurIntensity)
-                TriggerScreenblurFadeOut(1000.0)
-            end
-            Wait(effectInterval)
-        else
-            Wait(1000)
-        end
-    end
-end)
-
 -- Minimap update
 CreateThread(function()
     while true do
@@ -1243,136 +915,9 @@ CreateThread(function()
     end
 end)
 
--- Compass
-function round(num, numDecimalPlaces)
-    local mult = 10^(numDecimalPlaces or 0)
-    return math.floor(num + 0.5 * mult)
-end
-
-local prevBaseplateStats = { nil, nil, nil, nil, nil, nil, nil}
-
-local function updateBaseplateHud(data)
-    local shouldUpdate = false
-    for k, v in pairs(data) do
-        if prevBaseplateStats[k] ~= v then shouldUpdate = true break end
-    end
-    prevBaseplateStats = data
-    if shouldUpdate then
-        SendNUIMessage ({
-            action = 'baseplate',
-            topic = 'compassupdate',
-            show = data[1],
-            street1 = data[2],
-            street2 = data[3],
-            showCompass = data[4],
-            showStreets = data[5],
-            showPointer = data[6],
-            showDegrees = data[7],
-        })
-    end
-end
-
-local lastCrossroadUpdate = 0
-local lastCrossroadCheck = {}
-
-local function getCrossroads(player)
-    local updateTick = GetGameTimer()
-    if updateTick - lastCrossroadUpdate > 5000 then
-        local pos = GetEntityCoords(player)
-        local street1, street2 = GetStreetNameAtCoord(pos.x, pos.y, pos.z)
-        lastCrossroadUpdate = updateTick
-        lastCrossroadCheck = { GetStreetNameFromHashKey(street1), GetStreetNameFromHashKey(street2) }
-    end
-    return lastCrossroadCheck
-end
-
--- Compass Update loop
-
-CreateThread(function()
-	local heading, lastHeading = 0, 1
-    local lastIsOutCompassCheck = Menu.isOutCompassChecked
-    local lastInVehicle = false
-	while true do
-        if LocalPlayer.state.isLoggedIn then
-            Wait(400)
-            local show = true
-            local player = PlayerPedId()
-            local camRot = GetGameplayCamRot(0)
-
-            if Menu.isCompassFollowChecked then
-                heading = tostring(round(360.0 - ((camRot.z + 360.0) % 360.0)))
-            else
-                heading = tostring(round(360.0 - GetEntityHeading(player)))
-            end
-            
-            if heading == '360' then 
-                heading = '0' 
-            end
-
-            local playerInVehcile = IsPedInAnyVehicle(player)
-
-            if heading ~= lastHeading or lastInVehicle ~= playerInVehcile then
-                if playerInVehcile then
-                    local crossroads = getCrossroads(player)
-                    SendNUIMessage ({ 
-                        action = 'update', 
-                        value = heading 
-                    })
-                    updateBaseplateHud({
-                        show,
-                        crossroads[1],
-                        crossroads[2],
-                        Menu.isCompassShowChecked,
-                        Menu.isShowStreetsChecked,
-                        Menu.isPointerShowChecked,
-                        Menu.isDegreesShowChecked,
-                    })
-                    lastInVehicle = true
-                else
-                    if not Menu.isOutCompassChecked then
-                        SendNUIMessage ({ 
-                            action = 'update', 
-                            value = heading 
-                        })
-                        SendNUIMessage ({
-                            action = 'baseplate',
-                            topic = 'opencompass',
-                            show = true,
-                            showCompass = true,
-                        })
-                        prevBaseplateStats[1] = true
-                        prevBaseplateStats[4] = true
-                    else
-                        SendNUIMessage ({
-                            action = 'baseplate',
-                            topic = 'closecompass',
-                            show = false,
-                        })
-                        prevBaseplateStats[1] = false
-                    end
-                    lastInVehicle = false
-                end
-            end
-            lastHeading = heading
-            if lastIsOutCompassCheck ~= Menu.isOutCompassChecked and not IsPedInAnyVehicle(player) then
-                if not Menu.isOutCompassChecked then
-                    SendNUIMessage ({
-                        action = 'baseplate',
-                        topic = 'opencompass',
-                        show = true,
-                        showCompass = true,
-                    })
-                else
-                    SendNUIMessage ({
-                        action = 'baseplate',
-                        topic = 'closecompass',
-                        show = false,
-                    })
-                end
-                lastIsOutCompassCheck = Menu.isOutCompassChecked
-            end
-        else
-            Wait(1000)
-        end
-    end
-end)
+exports['bendixboy-hudmanager']:RegisterHudItem({
+    name = 'ps-hud',
+    show = function() updateShowPlayerHud(true) end,
+    hide = function() updateShowPlayerHud(false) end,
+    shouldBeDisplayed = true
+})

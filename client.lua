@@ -787,35 +787,13 @@ CreateThread(function()
                     Menu.isCineamticModeChecked,
                     dev,
                 })
-
-                -- Disable vehicle hud!
-                -- updateVehicleHud({
-                --     show,
-                --     IsPauseMenuActive(),
-                --     seatbeltOn,
-                --     math.ceil(GetEntitySpeed(vehicle) * speedMultiplier),
-                --     getFuelLevel(vehicle),
-                --     math.ceil(GetEntityCoords(player).z * 0.5),
-                --     showAltitude,
-                --     showSeatbelt,
-                --     showSquareB,
-                --     showCircleB,
-                -- })
                 showAltitude = false
                 showSeatbelt = true
             else
-                if wasInVehicle then
-                    wasInVehicle = false
-                    prevVehicleStats[1] = false
-                    prevVehicleStats[3] = false
-                    seatbeltOn = false
-                    cruiseOn = false
-                    harness = false
-                end
                 DisplayRadar(not Menu.isOutMapChecked)
             end
         else
-            -- Not logged in, dont show Status/Vehicle UI (cached)
+            -- Not logged in, dont show Status UI (cached)
             updateShowPlayerHud(false)
             DisplayRadar(false)
             Wait(1000)
